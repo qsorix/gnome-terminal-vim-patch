@@ -1,0 +1,331 @@
+diff -aur orig/gnome-terminal-2.32.1/src/profile-editor.c gnome-terminal-2.32.1/src/profile-editor.c
+--- orig/gnome-terminal-2.32.1/src/profile-editor.c	2010-11-13 13:23:44.000000000 +0100
++++ gnome-terminal-2.32.1/src/profile-editor.c	2011-07-29 21:27:38.000000000 +0200
+@@ -235,6 +235,10 @@
+     SET_SENSITIVE ("word-chars-entry",
+                    !terminal_profile_property_locked (profile, TERMINAL_PROFILE_WORD_CHARS));
+ 
++  if (!prop_name || prop_name == I_(TERMINAL_PROFILE_FILE_EDIT_COMMAND))
++    SET_SENSITIVE ("file-edit-command-entry",
++                   !terminal_profile_property_locked (profile, TERMINAL_PROFILE_FILE_EDIT_COMMAND));
++
+   if (!prop_name ||
+       prop_name == I_(TERMINAL_PROFILE_USE_CUSTOM_DEFAULT_SIZE) ||
+       prop_name == I_(TERMINAL_PROFILE_DEFAULT_SIZE_COLUMNS) ||
+@@ -898,6 +902,7 @@
+   CONNECT ("use-custom-default-size-checkbutton", TERMINAL_PROFILE_USE_CUSTOM_DEFAULT_SIZE);
+   CONNECT ("use-theme-colors-checkbutton", TERMINAL_PROFILE_USE_THEME_COLORS);
+   CONNECT ("word-chars-entry", TERMINAL_PROFILE_WORD_CHARS);
++  CONNECT ("file-edit-command-entry", TERMINAL_PROFILE_FILE_EDIT_COMMAND);
+   CONNECT_WITH_FLAGS ("bell-checkbutton", TERMINAL_PROFILE_SILENT_BELL, FLAG_INVERT_BOOL);
+ 
+ #undef CONNECT
+diff -aur orig/gnome-terminal-2.32.1/src/profile-preferences.glade gnome-terminal-2.32.1/src/profile-preferences.glade
+--- orig/gnome-terminal-2.32.1/src/profile-preferences.glade	2010-11-13 13:23:44.000000000 +0100
++++ gnome-terminal-2.32.1/src/profile-preferences.glade	2011-07-29 23:00:29.000000000 +0200
+@@ -2786,6 +2786,100 @@
+ 	      <property name="use_markup">False</property>
+ 	      <property name="justify">GTK_JUSTIFY_CENTER</property>
+ 	      <property name="wrap">False</property>
++	      <property name="selectable">False</property>
++	      <property name="xalign">0.5</property>
++	      <property name="yalign">0.5</property>
++	      <property name="xpad">0</property>
++	      <property name="ypad">0</property>
++	      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
++	      <property name="width_chars">-1</property>
++	      <property name="single_line_mode">False</property>
++	      <property name="angle">0</property>
++	    </widget>
++	    <packing>
++	      <property name="type">tab</property>
++	    </packing>
++	  </child>
++
++	  <child>
++	    <widget class="GtkVBox" id="vbox5">
++	      <property name="border_width">12</property>
++	      <property name="visible">True</property>
++	      <property name="homogeneous">False</property>
++	      <property name="spacing">12</property>
++
++	      <child>
++		<widget class="GtkHBox" id="hbox141">
++		  <property name="visible">True</property>
++		  <property name="homogeneous">False</property>
++		  <property name="spacing">12</property>
++
++		  <child>
++		    <widget class="GtkLabel" id="file-edit-command-entry-label">
++		      <property name="visible">True</property>
++		      <property name="label" translatable="yes">File edit command:</property>
++		      <property name="use_underline">True</property>
++		      <property name="use_markup">False</property>
++		      <property name="justify">GTK_JUSTIFY_CENTER</property>
++		      <property name="wrap">False</property>
++		      <property name="selectable">False</property>
++		      <property name="xalign">0</property>
++		      <property name="yalign">0.5</property>
++		      <property name="xpad">0</property>
++		      <property name="ypad">0</property>
++		      <property name="mnemonic_widget">file-edit-command-entry</property>
++		      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
++		      <property name="width_chars">-1</property>
++		      <property name="single_line_mode">False</property>
++		      <property name="angle">0</property>
++		    </widget>
++		    <packing>
++		      <property name="padding">0</property>
++		      <property name="expand">False</property>
++		      <property name="fill">False</property>
++		    </packing>
++		  </child>
++
++		  <child>
++		    <widget class="GtkEntry" id="file-edit-command-entry">
++		      <property name="visible">True</property>
++		      <property name="can_focus">True</property>
++		      <property name="editable">True</property>
++		      <property name="visibility">True</property>
++		      <property name="max_length">0</property>
++		      <property name="text" translatable="yes"></property>
++		      <property name="has_frame">True</property>
++		      <property name="activates_default">False</property>
++		    </widget>
++		    <packing>
++		      <property name="padding">0</property>
++		      <property name="expand">True</property>
++		      <property name="fill">True</property>
++		    </packing>
++		  </child>
++		</widget>
++		<packing>
++		  <property name="padding">0</property>
++		  <property name="expand">False</property>
++		  <property name="fill">True</property>
++		</packing>
++	      </child>
++
++	    </widget>
++	    <packing>
++	      <property name="tab_expand">False</property>
++	      <property name="tab_fill">True</property>
++	    </packing>
++	  </child>
++
++	  <child>
++	    <widget class="GtkLabel" id="label455">
++	      <property name="visible">True</property>
++	      <property name="label">File edit</property>
++	      <property name="use_underline">False</property>
++	      <property name="use_markup">False</property>
++	      <property name="justify">GTK_JUSTIFY_CENTER</property>
++	      <property name="wrap">False</property>
+ 	      <property name="selectable">False</property>
+ 	      <property name="xalign">0.5</property>
+ 	      <property name="yalign">0.5</property>
+diff -aur orig/gnome-terminal-2.32.1/src/terminal-profile.c gnome-terminal-2.32.1/src/terminal-profile.c
+--- orig/gnome-terminal-2.32.1/src/terminal-profile.c	2010-08-26 21:55:09.000000000 +0200
++++ gnome-terminal-2.32.1/src/terminal-profile.c	2011-07-29 21:32:01.000000000 +0200
+@@ -86,6 +86,7 @@
+   PROP_USE_THEME_COLORS,
+   PROP_VISIBLE_NAME,
+   PROP_WORD_CHARS,
++  PROP_FILE_EDIT_COMMAND,
+   LAST_PROP
+ };
+ 
+@@ -126,6 +127,7 @@
+ #define KEY_USE_THEME_COLORS "use_theme_colors"
+ #define KEY_VISIBLE_NAME "visible_name"
+ #define KEY_WORD_CHARS "word_chars"
++#define KEY_FILE_EDIT_COMMAND "file_edit_command"
+ 
+ /* Keep these in sync with the GConf schema! */
+ #define DEFAULT_ALLOW_BOLD            (TRUE)
+@@ -166,6 +168,7 @@
+ #define DEFAULT_USE_THEME_COLORS      (TRUE)
+ #define DEFAULT_VISIBLE_NAME          (N_("Unnamed"))
+ #define DEFAULT_WORD_CHARS            ("-A-Za-z0-9,./?%&#:_=+@~")
++#define DEFAULT_FILE_EDIT_COMMAND     ("\\e:new %s\\r")
+ 
+ struct _TerminalProfilePrivate
+ {
+@@ -1339,6 +1342,7 @@
+   TERMINAL_PROFILE_PROPERTY_STRING (TITLE, _(DEFAULT_TITLE), KEY_TITLE);
+   TERMINAL_PROFILE_PROPERTY_STRING (VISIBLE_NAME, _(DEFAULT_VISIBLE_NAME), KEY_VISIBLE_NAME);
+   TERMINAL_PROFILE_PROPERTY_STRING (WORD_CHARS, DEFAULT_WORD_CHARS, KEY_WORD_CHARS);
++  TERMINAL_PROFILE_PROPERTY_STRING (FILE_EDIT_COMMAND, DEFAULT_FILE_EDIT_COMMAND, KEY_FILE_EDIT_COMMAND);
+ 
+   TERMINAL_PROFILE_PROPERTY_VALUE_ARRAY_BOXED (PALETTE, "palette-color", GDK_TYPE_COLOR, KEY_PALETTE);
+ }
+diff -aur orig/gnome-terminal-2.32.1/src/terminal-profile.h gnome-terminal-2.32.1/src/terminal-profile.h
+--- orig/gnome-terminal-2.32.1/src/terminal-profile.h	2010-08-26 21:55:09.000000000 +0200
++++ gnome-terminal-2.32.1/src/terminal-profile.h	2011-07-29 21:27:54.000000000 +0200
+@@ -104,6 +104,7 @@
+ #define TERMINAL_PROFILE_USE_THEME_COLORS       "use-theme-colors"
+ #define TERMINAL_PROFILE_VISIBLE_NAME           "visible-name"
+ #define TERMINAL_PROFILE_WORD_CHARS             "word-chars"
++#define TERMINAL_PROFILE_FILE_EDIT_COMMAND      "file-edit-command"
+ 
+ /* TerminalProfile object */
+ 
+diff -aur orig/gnome-terminal-2.32.1/src/terminal-screen.c gnome-terminal-2.32.1/src/terminal-screen.c
+--- orig/gnome-terminal-2.32.1/src/terminal-screen.c	2010-11-13 13:23:44.000000000 +0100
++++ gnome-terminal-2.32.1/src/terminal-screen.c	2011-07-29 21:34:45.000000000 +0200
+@@ -163,6 +163,7 @@
+   { "(?:callto:|h323:|sip:)" USERCHARS_CLASS "[" USERCHARS ".]*(?:" PORT "/[a-z0-9]+)?\\@" HOST, FLAVOR_VOIP_CALL, G_REGEX_CASELESS  },
+   { "(?:mailto:)?" USERCHARS_CLASS "[" USERCHARS ".]*\\@" HOSTCHARS_CLASS "+\\." HOST, FLAVOR_EMAIL, G_REGEX_CASELESS  },
+   { "news:[[:alnum:]\\Q^_{|}~!\"#$%&'()*+,./;:=?`\\E]+", FLAVOR_AS_IS, G_REGEX_CASELESS  },
++  { PATHCHARS_CLASS "*:[[:digit:]]+", FLAVOR_FILE_POSITION, G_REGEX_CASELESS }
+ };
+ 
+ static GRegex **url_regexes;
+diff -aur orig/gnome-terminal-2.32.1/src/terminal-screen.h gnome-terminal-2.32.1/src/terminal-screen.h
+--- orig/gnome-terminal-2.32.1/src/terminal-screen.h	2010-08-26 21:55:09.000000000 +0200
++++ gnome-terminal-2.32.1/src/terminal-screen.h	2011-07-29 20:24:20.000000000 +0200
+@@ -32,7 +32,8 @@
+   FLAVOR_DEFAULT_TO_HTTP,
+   FLAVOR_VOIP_CALL,
+   FLAVOR_EMAIL,
+-  FLAVOR_SKEY
++  FLAVOR_SKEY,
++  FLAVOR_FILE_POSITION
+ } TerminalURLFlavour;
+ 
+ /* Forward decls */
+diff -aur orig/gnome-terminal-2.32.1/src/terminal-window.c gnome-terminal-2.32.1/src/terminal-window.c
+--- orig/gnome-terminal-2.32.1/src/terminal-window.c	2010-11-13 13:23:44.000000000 +0100
++++ gnome-terminal-2.32.1/src/terminal-window.c	2011-07-29 22:20:04.000000000 +0200
+@@ -1222,6 +1222,65 @@
+   gtk_clipboard_set_text (clipboard, info->string, -1);
+ }
+ 
++static gchar*
++terminal_window_get_file_edit_command (TerminalScreen* screen, const char *file_path)
++{
++  gchar* escaped;
++  gchar* command;
++  gchar* formated;
++
++  escaped = terminal_profile_get_property_string (
++              terminal_screen_get_profile (screen),
++              TERMINAL_PROFILE_FILE_EDIT_COMMAND
++            );
++
++  command = g_strcompress(escaped);
++  formated = g_strdup_printf (command, file_path);
++
++  g_free(command);
++
++  return formated;
++}
++
++static void
++terminal_window_edit_file (TerminalWindow *window,
++			 const char *file_path,
++			 TerminalURLFlavour flavor)
++{
++  gchar *command;
++  gint vim_page;
++
++  TerminalWindowPrivate *priv = window->priv;
++  GtkNotebook *notebook = GTK_NOTEBOOK (priv->notebook);
++
++  if (!gtk_widget_get_realized (GTK_WIDGET (notebook)))
++    return;
++
++  if (!priv->active_screen)
++    return;
++  
++  vim_page = 0; // TODO: any nice way to find running vim?
++
++  gtk_notebook_set_current_page (notebook, vim_page);
++
++  command = terminal_window_get_file_edit_command (priv->active_screen, file_path);
++  vte_terminal_feed_child (VTE_TERMINAL (priv->active_screen), command, strlen(command));
++  g_free(command);
++}
++
++static void
++popup_edit_file_callback (GtkAction *action,
++                         TerminalWindow *window)
++{
++  TerminalWindowPrivate *priv = window->priv;
++  TerminalScreenPopupInfo *info = priv->popup_info;
++
++  if (info->string == NULL)
++    return;
++
++  terminal_window_edit_file (window, info->string, info->flavour);
++}
++
+ static void
+ popup_leave_fullscreen_callback (GtkAction *action,
+                                  TerminalWindow *window)
+@@ -1301,7 +1360,8 @@
+   TerminalScreen *screen = info->screen;
+   GtkWidget *popup_menu, *im_menu, *im_menu_item;
+   GtkAction *action;
+-  gboolean can_paste, can_paste_uris, show_link, show_email_link, show_call_link, show_input_method_menu;
++  gboolean can_paste, can_paste_uris, show_link, show_email_link, show_call_link, show_input_method_menu,
++	   show_edit_file;
+   int n_pages;
+ 
+   if (!gtk_widget_get_realized (GTK_WIDGET (screen)))
+@@ -1317,11 +1377,14 @@
+ 
+   n_pages = gtk_notebook_get_n_pages (GTK_NOTEBOOK (priv->notebook));
+ 
++  printf("popup_clipboard_targets_received_cb %s\n", info->string);
++
+   can_paste = targets != NULL && gtk_targets_include_text (targets, n_targets);
+   can_paste_uris = targets != NULL && gtk_targets_include_uri (targets, n_targets);
+   show_link = info->string != NULL && (info->flavour == FLAVOR_AS_IS || info->flavour == FLAVOR_DEFAULT_TO_HTTP);
+   show_email_link = info->string != NULL && info->flavour == FLAVOR_EMAIL;
+   show_call_link = info->string != NULL && info->flavour == FLAVOR_VOIP_CALL;
++  show_edit_file = info->string != NULL && info->flavour == FLAVOR_FILE_POSITION;
+ 
+   action = gtk_action_group_get_action (priv->action_group, "PopupSendEmail");
+   gtk_action_set_visible (action, show_email_link);
+@@ -1335,6 +1398,8 @@
+   gtk_action_set_visible (action, show_link);
+   action = gtk_action_group_get_action (priv->action_group, "PopupCopyLinkAddress");
+   gtk_action_set_visible (action, show_link);
++  action = gtk_action_group_get_action (priv->action_group, "PopupEditFile");
++  gtk_action_set_visible (action, show_edit_file);
+ 
+   action = gtk_action_group_get_action (priv->action_group, "PopupCloseWindow");
+   gtk_action_set_visible (action, n_pages <= 1);
+@@ -1423,6 +1488,10 @@
+         terminal_skey_do_popup (GTK_WINDOW (window), screen, match);
+         break;
+ #endif
++      case FLAVOR_FILE_POSITION:
++	terminal_window_edit_file (window, match, flavour);
++	break;
++
+       default:
+         gtk_widget_grab_focus (GTK_WIDGET (screen));
+         terminal_util_open_url (GTK_WIDGET (window), match, flavour,
+@@ -1938,6 +2007,9 @@
+       { "PopupCopyLinkAddress", NULL, N_("_Copy Link Address"), NULL,
+         NULL,
+         G_CALLBACK (popup_copy_url_callback) },
++      { "PopupEditFile", NULL, N_("_Edit file"), NULL,
++        NULL,
++        G_CALLBACK (popup_edit_file_callback) },
+       { "PopupTerminalProfiles", NULL, N_("P_rofiles") },
+       { "PopupCopy", GTK_STOCK_COPY, NULL, "",
+         NULL,
+diff -aur orig/gnome-terminal-2.32.1/src/terminal.xml gnome-terminal-2.32.1/src/terminal.xml
+--- orig/gnome-terminal-2.32.1/src/terminal.xml	2010-08-26 21:55:09.000000000 +0200
++++ gnome-terminal-2.32.1/src/terminal.xml	2011-07-29 19:41:53.000000000 +0200
+@@ -84,6 +84,7 @@
+     <menuitem action="PopupCopyCallAddress" />
+     <menuitem action="PopupOpenLink" />
+     <menuitem action="PopupCopyLinkAddress" />
++    <menuitem action="PopupEditFile" />
+     <separator />
+     <menuitem action="PopupNewTerminal" />
+     <menuitem action="PopupNewTab" />
